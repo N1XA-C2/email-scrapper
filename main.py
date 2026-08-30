@@ -15,9 +15,9 @@ class EmailScrapper():
 
     def __init__(self):
         
-        self.left_links = deque() # To store, extracted links and links left to scrap
+        self.left_links = deque() # To store, extracted links from page also stores links left to scrape
         self.scrapped_emails = set() # To store extracted email
-        self.visited_site = set() # To store scrapped site 
+        self.scrapped_links = set() # To store scrapped site 
 
     def intro(self) -> str:
         """Returns Red logo."""
@@ -41,9 +41,9 @@ class EmailScrapper():
     def is_visited(self, url:str) -> bool:
         """Returns True if url is already visited else returns False."""
 
-        return url in self.visited_site
+        return url in self.scrapped_links
     
-    def ext_emails(self, data:str) -> list:
+    def scrape_emails(self, data:str) -> list:
         """Takes data as text and returns lists of emails."""
 
         return re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", data)
@@ -63,7 +63,7 @@ class EmailScrapper():
             for email in emails:
                 f.write(f"{email}\n")
 
-    def scrap(self, session, base_domain, url) -> None:
+    def scrape(self, session, base_domain, url) -> None:
         """Takes session, basedomain, a set of email and link"""
 
         try:
@@ -101,7 +101,7 @@ class EmailScrapper():
 
                         self.left_links.append(cleaned_url)
 
-            self.scrapped_emails.update(self.ext_emails(r.text))
+            self.scrapped_emails.update(self.scrape_emails(r.text))
 
         except requests.RequestException as e:
             print("\r\033[K", end="", flush=True)
@@ -114,7 +114,7 @@ class EmailScrapper():
 
     def run(self, args):
 
-        # Test site: https://n1xa-cli.github.io/website-mail/
+        # Test site: https://scrap-me.netlify.app/
         try:
             print(self.intro())
 
@@ -136,53 +136,50 @@ class EmailScrapper():
 
             start_time = time.perf_counter()
 
-            while self.left_links and len(self.visited_site) < limit:
+            while self.left_links and len(self.scrapped_links) < limit:
                 batch = []
                 
                 for _ in range(threads):
-                    if not self.left_links or len(self.visited_site) >= limit:
+
+                    if not self.left_links or len(self.scrapped_links) >= limit:
                         break
 
                     if not self.left_links:
                         break
 
-                    current_link = self.left_links.popleft()
+                    current_link = self.left_links.pop()
 
                     if self.is_visited(current_link):
                         continue
 
-                    self.visited_site.add(current_link)
+                    self.scrapped_links.add(current_link)
 
-                    t = threading.Thread(target=self.scrap, args=(session, base_domain, current_link))
+                    t = threading.Thread(target=self.scrape, args=(session, base_domain, current_link))
                     t.start()
                     batch.append(t)
 
                 for t in batch:
                     t.join()
             
-            print(colored(f"\n[+] Scrapped {len(self.visited_site)} site", 'green'))
+            print(colored(f"\n[+] Scrapped {len(self.scrapped_links)} site", 'green'))
             
             
             if file:
                 self.write_to(file, self.scrapped_emails)
 
             end_time = time.perf_counter()
-            print(colored(f"[+] Took {end_time - start_time:.3f} seconds", 'green'))
+            print(colored(f"[+] Took {end_time - start_time:.2f} seconds", 'green'))
 
             self.print_emails(found_email=self.scrapped_emails)
 
         except KeyboardInterrupt:
             print(colored("\n[+] Detected Ctrl + C... Stopping...", 'red'))
-
         
-        
-        
-
 
 if __name__ == "__main__":
     praser = argparse.ArgumentParser(description="An Email Scrapper.", )
-    praser.add_argument("-d", "--domain", type=str, required=True, metavar="", help="Specify the domain to scrap.")
-    praser.add_argument("-l", "--limit", type=int, required=False, default=20, metavar="", help="Specify the urls to scrap from(default is 20).")
+    praser.add_argument("-d", "--domain", type=str, required=True, metavar="", help="Specify the domain to scrape.")
+    praser.add_argument("-l", "--limit", type=int, required=False, default=20, metavar="", help="Specify the urls to scrape from(default is 20).")
     praser.add_argument("-w", "--write", type=str, required=False, default=None, metavar="", help="Write the emails to.")
     praser.add_argument("-t", "--thread", type=int,required=False, default=5, metavar="", help="Specify threads(default: 5).")
     args = praser.parse_args()
