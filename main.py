@@ -1,55 +1,57 @@
 #!/usr/bin/env python3
 
 import argparse
-import time
-from bs4 import BeautifulSoup
-import requests
 import re
-from urllib.parse import urljoin, urlparse
-from collections import deque
 import sys
 import threading
-from termcolor import colored 
+import time
+from collections import deque
+from urllib.parse import urljoin, urlparse
 
-class EmailScrapper():
+import requests
+from bs4 import BeautifulSoup
+from termcolor import colored
+
+
+class EmailScrapper:
 
     def __init__(self):
-        
+
         self.left_links = deque() # To store, extracted links from page also stores links left to scrape
         self.scrapped_emails = set() # To store extracted email
-        self.scrapped_links = set() # To store scrapped site 
+        self.scrapped_links = set() # To store scrapped site
 
     def intro(self) -> str:
         """Returns Red logo."""
 
         logo = """
-▓█████  ███▄ ▄███▓ ▄▄▄       ██▓ ██▓         ██████  ▄████▄   ██▀███   ▄▄▄       ██▓███   ██▓███  ▓█████  ██▀███  
+▓█████  ███▄ ▄███▓ ▄▄▄       ██▓ ██▓         ██████  ▄████▄   ██▀███   ▄▄▄       ██▓███   ██▓███  ▓█████  ██▀███
 ▓█   ▀ ▓██▒▀█▀ ██▒▒████▄    ▓██▒▓██▒       ▒██    ▒ ▒██▀ ▀█  ▓██ ▒ ██▒▒████▄    ▓██░  ██▒▓██░  ██▒▓█   ▀ ▓██ ▒ ██▒
 ▒███   ▓██    ▓██░▒██  ▀█▄  ▒██▒▒██░       ░ ▓██▄   ▒▓█    ▄ ▓██ ░▄█ ▒▒██  ▀█▄  ▓██░ ██▓▒▓██░ ██▓▒▒███   ▓██ ░▄█ ▒
-▒▓█  ▄ ▒██    ▒██ ░██▄▄▄▄██ ░██░▒██░         ▒   ██▒▒▓▓▄ ▄██▒▒██▀▀█▄  ░██▄▄▄▄██ ▒██▄█▓▒ ▒▒██▄█▓▒ ▒▒▓█  ▄ ▒██▀▀█▄  
+▒▓█  ▄ ▒██    ▒██ ░██▄▄▄▄██ ░██░▒██░         ▒   ██▒▒▓▓▄ ▄██▒▒██▀▀█▄  ░██▄▄▄▄██ ▒██▄█▓▒ ▒▒██▄█▓▒ ▒▒▓█  ▄ ▒██▀▀█▄
 ░▒████▒▒██▒   ░██▒ ▓█   ▓██▒░██░░██████▒   ▒██████▒▒▒ ▓███▀ ░░██▓ ▒██▒ ▓█   ▓██▒▒██▒ ░  ░▒██▒ ░  ░░▒████▒░██▓ ▒██▒
 ░░ ▒░ ░░ ▒░   ░  ░ ▒▒   ▓▒█░░▓  ░ ▒░▓  ░   ▒ ▒▓▒ ▒ ░░ ░▒ ▒  ░░ ▒▓ ░▒▓░ ▒▒   ▓▒█░▒▓▒░ ░  ░▒▓▒░ ░  ░░░ ▒░ ░░ ▒▓ ░▒▓░
  ░ ░  ░░  ░      ░  ▒   ▒▒ ░ ▒ ░░ ░ ▒  ░   ░ ░▒  ░ ░  ░  ▒     ░▒ ░ ▒░  ▒   ▒▒ ░░▒ ░     ░▒ ░      ░ ░  ░  ░▒ ░ ▒░
-   ░   ░      ░     ░   ▒    ▒ ░  ░ ░      ░  ░  ░  ░          ░░   ░   ░   ▒   ░░       ░░          ░     ░░   ░ 
-   ░  ░       ░         ░  ░ ░      ░  ░         ░  ░ ░         ░           ░  ░                     ░  ░   ░     
+   ░   ░      ░     ░   ▒    ▒ ░  ░ ░      ░  ░  ░  ░          ░░   ░   ░   ▒   ░░       ░░          ░     ░░   ░
+   ░  ░       ░         ░  ░ ░      ░  ░         ░  ░ ░         ░           ░  ░                     ░  ░   ░
                                                     ░         ~ N1XA-CLI
                                                     """
-        
+
         return colored(logo, 'red')
-        
+
 
     def is_visited(self, url:str) -> bool:
         """Returns True if url is already visited else returns False."""
 
         return url in self.scrapped_links
-    
+
     def scrape_emails(self, data:str) -> list:
         """Takes data as text and returns lists of emails."""
 
         return re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", data)
 
     def print_emails(self, found_email:list) -> None:
-        
+
         print(colored(f"[+] Found {len(found_email)} Emails", 'green'))
 
         for email in found_email:
@@ -61,7 +63,7 @@ class EmailScrapper():
 
         with open(filename, "w") as f:
             for email in emails:
-                f.write(f"{email}\n")
+                f.writelines(f"{email}")
 
     def scrape(self, session, base_domain, url) -> None:
         """Takes session, basedomain, a set of email and link"""
@@ -83,7 +85,7 @@ class EmailScrapper():
 
             if not links:
                 return
-            
+
             for link in links:
                 href = link.get("href")
                 if href:
@@ -107,7 +109,7 @@ class EmailScrapper():
             print("\r\033[K", end="", flush=True)
             print(f"\n[!] {e}")
             return
-        
+
         except KeyboardInterrupt:
             self.print_emails(found_email=self.scrapped_emails)
             sys.exit(0)
@@ -138,7 +140,7 @@ class EmailScrapper():
 
             while self.left_links and len(self.scrapped_links) < limit:
                 batch = []
-                
+
                 for _ in range(threads):
 
                     if not self.left_links or len(self.scrapped_links) >= limit:
@@ -160,10 +162,10 @@ class EmailScrapper():
 
                 for t in batch:
                     t.join()
-            
+
             print(colored(f"\n[+] Scrapped {len(self.scrapped_links)} site", 'green'))
-            
-            
+
+
             if file:
                 self.write_to(file, self.scrapped_emails)
 
@@ -174,7 +176,7 @@ class EmailScrapper():
 
         except KeyboardInterrupt:
             print(colored("\n[+] Detected Ctrl + C... Stopping...", 'red'))
-        
+
 
 if __name__ == "__main__":
     praser = argparse.ArgumentParser(description="An Email Scrapper.", )
@@ -193,8 +195,6 @@ if __name__ == "__main__":
         "filename": args.write,
         "threads": args.thread
     }
-        
+
     scrapper = EmailScrapper()
     scrapper.run(arguments)
-
-    
