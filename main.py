@@ -181,7 +181,7 @@ if __name__ == "__main__":
     praser.add_argument("-d", "--domain", type=str, required=True, metavar="", help="Specify the domain to scrape.")
     praser.add_argument("-l", "--limit", type=int, required=False, default=20, metavar="", help="Specify the urls to scrape from(default is 20).")
     praser.add_argument("-w", "--write", type=str, required=False, default=None, metavar="", help="Write the emails to.")
-    praser.add_argument("-t", "--thread", type=int,required=False, default=5, metavar="", help="Specify threads(default: 5).")
+    praser.add_argument("-t", "--thread", type=int, required=False, default=5, metavar="", help="Specify threads(default: 5).")
     args = praser.parse_args()
 
     if not args:
