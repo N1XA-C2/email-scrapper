@@ -227,16 +227,6 @@ Commercial use, sale, or commercial redistribution is not permitted without expl
 
 See [`LICENSE`](LICENSE) for the complete license terms.
 
-Add the license you want to use for this project.
-
-For example:
-
-```text
-MIT License
-```
-
-See `LICENSE` for the complete license text.
-
 ## 👤 Author
 
 **N1XA-CLI**
