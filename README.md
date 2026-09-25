@@ -49,8 +49,8 @@ sudo pacman -S python python-requests python-beautifulsoup4 python-lxml python-t
 Clone the repository:
 
 ```bash
-git clone <YOUR-REPOSITORY-URL>
-cd <YOUR-REPOSITORY-DIRECTORY>
+git clone https://gitlab.com/N1XA-CLI/email-scrapper.git
+cd email-scrapper
 ```
 
 Then install the required dependencies.
@@ -66,13 +66,13 @@ chmod +x scraper.py
 Basic usage:
 
 ```bash
-python scraper.py -d https://example.com
+python scraper.py -d https://scrap-me.netlify.app/
 ```
 
 Or, if executable:
 
 ```bash
-./scraper.py -d https://example.com
+./scraper.py -d https://scrap-me.netlify.app/
 ```
 
 ### Command-line options
@@ -89,31 +89,31 @@ Or, if executable:
 Crawl up to 20 pages:
 
 ```bash
-python scraper.py -d https://example.com
+python scraper.py -d https://scrap-me.netlify.app/
 ```
 
 Crawl up to 100 pages:
 
 ```bash
-python scraper.py -d https://example.com -l 100
+python scraper.py -d https://scrap-me.netlify.app/ -l 100
 ```
 
 Use 10 threads:
 
 ```bash
-python scraper.py -d https://example.com -t 10
+python scraper.py -d https://scrap-me.netlify.app/ -t 10
 ```
 
 Save discovered emails:
 
 ```bash
-python scraper.py -d https://example.com -w emails.txt
+python scraper.py -d https://scrap-me.netlify.app/ -w emails.txt
 ```
 
 Combine options:
 
 ```bash
-python scraper.py -d https://example.com -l 100 -t 10 -w emails.txt
+python scraper.py -d https://scrap-me.netlify.app/ -l 100 -t 10 -w emails.txt
 ```
 
 ## ⚙️ How It Works
