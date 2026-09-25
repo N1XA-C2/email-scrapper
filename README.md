@@ -219,6 +219,14 @@ When testing against third-party infrastructure, respect:
 
 ## 📜 License
 
+This project is released under the **N1XA-CLI Non-Commercial License**.
+
+You are free to use, modify, and redistribute the project for non-commercial purposes, provided that proper credit is given to **N1XA-CLI** and the license terms are preserved.
+
+Commercial use, sale, or commercial redistribution is not permitted without explicit permission from N1XA-CLI.
+
+See [`LICENSE`](LICENSE) for the complete license terms.
+
 Add the license you want to use for this project.
 
 For example:
