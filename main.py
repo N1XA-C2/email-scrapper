@@ -5,6 +5,7 @@ import re
 import sys
 import threading
 import time
+import lxml
 from collections import deque
 from urllib.parse import urljoin, urlparse
 
@@ -20,6 +21,8 @@ class EmailScrapper:
         self.left_links = deque() # To store, extracted links from page also stores links left to scrape
         self.scrapped_emails = set() # To store extracted email
         self.scrapped_links = set() # To store scrapped site
+        self.session = requests.Session()
+        self.beauty = BeautifulSoup
 
     def intro(self) -> str:
         """Returns Red logo."""
@@ -40,10 +43,14 @@ class EmailScrapper:
         return colored(logo, 'red')
 
 
-    def is_visited(self, url:str) -> bool:
+    def _is_visited(self, url:str) -> bool:
         """Returns True if url is already visited else returns False."""
 
         return url in self.scrapped_links
+
+    def scrape_links(self, data:str) ->  list:
+        """Takes raw html data and returns a list of links found."""
+        return self.beauty(data, "lxml").find_all("a")
 
     def scrape_emails(self, data:str) -> list:
         """Takes data as text and returns lists of emails."""
@@ -59,19 +66,19 @@ class EmailScrapper:
 
     def write_to(self, filename, emails:list) -> None:
 
-        print(colored(f"[+] Writing to {filename}", 'yellow'))
+        print(colored(f"[+] Writing to {filename}", 'green'))
 
         with open(filename, "w") as f:
             for email in emails:
                 f.writelines(f"{email}")
 
-    def scrape(self, session, base_domain, url) -> None:
-        """Takes session, basedomain, a set of email and link"""
+    def scrape(self, base_domain, url) -> None:
+        """Takes basedomain, and link"""
 
         try:
             print(colored(f"\r\033[K[+] Scrapping from: {url}", 'green'), flush=True, end="")
 
-            r = session.get(url=url, timeout=2)
+            r = self.session.get(url=url, timeout=2)
             r.raise_for_status()
 
             try:
@@ -79,12 +86,9 @@ class EmailScrapper:
                     return
             except requests.RequestException:
                 print(colored(f"\n[-] Cannot extract from {url}", 'on_red'))
-
-            html_data = BeautifulSoup(r.text, "html.parser")
-            links = html_data.find_all("a")
-
-            if not links:
-                return
+            
+            self.scrapped_emails.update(self.scrape_emails(r.text))
+            links = self.scrape_links(r.text)
 
             for link in links:
                 href = link.get("href")
@@ -102,8 +106,6 @@ class EmailScrapper:
                             continue
 
                         self.left_links.append(cleaned_url)
-
-            self.scrapped_emails.update(self.scrape_emails(r.text))
 
         except requests.RequestException as e:
             print("\r\033[K", end="", flush=True)
@@ -127,8 +129,7 @@ class EmailScrapper:
 
             base_domain = urlparse(domain).netloc
 
-            session = requests.Session()
-            session.headers.update({
+            self.session.headers.update({
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
             })
 
@@ -151,12 +152,12 @@ class EmailScrapper:
 
                     current_link = self.left_links.pop()
 
-                    if self.is_visited(current_link):
+                    if self._is_visited(current_link):
                         continue
 
                     self.scrapped_links.add(current_link)
 
-                    t = threading.Thread(target=self.scrape, args=(session, base_domain, current_link))
+                    t = threading.Thread(target=self.scrape, args=(base_domain, current_link))
                     t.start()
                     batch.append(t)
 
