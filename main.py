@@ -70,7 +70,7 @@ class EmailScrapper:
 
         with open(filename, "w") as f:
             for email in emails:
-                f.writelines(f"{email}")
+                f.writelines(f"{email}\n")
 
     def scrape(self, base_domain, url) -> None:
         """Takes basedomain, and link"""
