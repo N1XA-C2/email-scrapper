@@ -32,7 +32,16 @@ The scraper follows internal links, extracts email addresses from HTML content, 
 * `lxml`
 * `termcolor`
 
-Install the dependencies with:
+## 📥 Installation
+
+Clone the repository:
+
+```bash
+git clone https://gitlab.com/N1XA-CLI/email-scrapper.git
+cd email-scrapper
+```
+
+Install the required dependency:
 
 ```bash
 pip install requests beautifulsoup4 lxml termcolor
@@ -44,21 +53,10 @@ Or, if you use Arch Linux:
 sudo pacman -S python python-requests python-beautifulsoup4 python-lxml python-termcolor
 ```
 
-## 📥 Installation
-
-Clone the repository:
-
-```bash
-git clone https://gitlab.com/N1XA-CLI/email-scrapper.git
-cd email-scrapper
-```
-
-Then install the required dependencies.
-
 Make the script executable if desired:
 
 ```bash
-chmod +x scraper.py
+chmod +x main.py
 ```
 
 ## 🚀 Usage
@@ -66,13 +64,13 @@ chmod +x scraper.py
 Basic usage:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/
+python main.py -d https://scrap-me.netlify.app/
 ```
 
 Or, if executable:
 
 ```bash
-./scraper.py -d https://scrap-me.netlify.app/
+./main.py -d https://scrap-me.netlify.app/
 ```
 
 ### Command-line options
@@ -89,87 +87,32 @@ Or, if executable:
 Crawl up to 20 pages:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/
+python main.py -d https://scrap-me.netlify.app/
 ```
 
 Crawl up to 100 pages:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/ -l 100
+python main.py -d https://scrap-me.netlify.app/ -l 100
 ```
 
 Use 10 threads:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/ -t 10
+python main.py -d https://scrap-me.netlify.app/ -t 10
 ```
 
 Save discovered emails:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/ -w emails.txt
+python main.py -d https://scrap-me.netlify.app/ -w emails.txt
 ```
 
 Combine options:
 
 ```bash
-python scraper.py -d https://scrap-me.netlify.app/ -l 100 -t 10 -w emails.txt
+python main.py -d https://scrap-me.netlify.app/ -l 100 -t 10 -w emails.txt
 ```
-
-## ⚙️ How It Works
-
-The scraper follows a simple crawling pipeline:
-
-```text
-Target URL
-    │
-    ▼
-Download HTML
-    │
-    ├──────────────► Extract email addresses
-    │
-    ▼
-Extract <a> links
-    │
-    ▼
-Normalize URLs
-    │
-    ▼
-Keep only same-domain links
-    │
-    ▼
-Add unvisited URLs to queue
-    │
-    ▼
-Repeat until URL limit is reached
-```
-
-### 1. URL queue
-
-A `deque` stores URLs waiting to be processed.
-
-### 2. Email extraction
-
-The program searches downloaded page content using a regular expression matching common email-address formats.
-
-### 3. Link extraction
-
-BeautifulSoup parses the HTML and collects links from `<a>` elements.
-
-### 4. Same-domain restriction
-
-Only links belonging to the original domain are added to the crawling queue.
-
-### 5. Duplicate prevention
-
-Two sets are used to prevent unnecessary processing:
-
-* `scrapped_links` — URLs that have already been processed
-* `scrapped_emails` — email addresses that have already been discovered
-
-### 6. Multithreading
-
-The crawler starts several worker threads for each batch of URLs, allowing multiple pages to be requested concurrently.
 
 ## 📂 Output
 
@@ -182,24 +125,6 @@ support@example.com
 ```
 
 The terminal also displays discovered addresses and basic crawling statistics.
-
-## ⚠️ Limitations
-
-This is intentionally a relatively simple crawler.
-
-It currently:
-
-* Processes HTML pages only
-* Does not execute JavaScript
-* Does not handle authentication
-* Does not parse emails hidden behind JavaScript applications
-* Does not implement sophisticated robots.txt handling
-* Uses a relatively simple email regex
-* Does not implement advanced rate limiting
-* Does not maintain a persistent crawl database
-* Does not guarantee that every discovered string is a valid mailbox
-
-The `-t` option increases concurrency, so using a large number of threads can place significant load on a server.
 
 ## 🔐 Responsible Crawling
 
